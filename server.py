@@ -1,5 +1,6 @@
 import socket
 import threading
+import hashlib
 
 class Server:
 
@@ -42,8 +43,7 @@ class Server:
         for client in self.clients: 
 
             # encrypt the message
-
-            # ...
+            # це зробимо після rsa
 
             client.send(msg.encode())
 
@@ -53,7 +53,19 @@ class Server:
 
             for client in self.clients:
                 if client != c:
-                    client.send(msg)
+                    final_message = self.create_message(msg.decode())
+                    client.send(final_message)
+    
+    def create_message(self, message):
+
+        hash = self.get_hash(message)
+
+        bytes = message.encode()
+        final_message = hash + bytes
+        return final_message
+
+    def get_hash(self, message):
+        return hashlib.sha256(message.encode()).digest()
 
 if __name__ == "__main__":
     s = Server(9001)

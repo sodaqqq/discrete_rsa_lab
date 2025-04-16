@@ -1,5 +1,6 @@
 import socket
 import threading
+import hashlib
 
 class Client:
     def __init__(self, server_ip: str, port: int, username: str) -> None:
@@ -30,24 +31,41 @@ class Client:
 
     def read_handler(self): 
         while True:
-            message = self.s.recv(1024).decode()
+            message = self.s.recv(1024)
+
+            if len(message) < 32:
+                raise Exception('given message is to short')
+                continue
+
+            hash = message[:32]
+            encrypted_message = message[32:]
 
             # decrypt message with the secrete key
-
             # ... 
+            # стас тут твоє
+            # decrypted_message = rsa_decrypt(encrypted_message, secret_key)
 
+            decrypted_message = encrypted_message.decode() # тимчасово
+            calculated_hash = hashlib.sha256(decrypted_message.encode()).digest()
 
-            print(message)
+            if calculated_hash == hash:
+                print(f"{decrypted_message}")
+            else:
+                print("message was damaged")
 
     def write_handler(self):
         while True:
             message = input()
 
-            # encrypt message with the secrete key
-
-            # ...
-
-            self.s.send(message.encode())
+            hash = self.get_hash(message)
+            # encrypted_message = rsa_encrypt(message, secret_key)
+            # стас тут твоє шифрування
+            bytes = message.encode()
+            final_message = hash + bytes
+            self.s.send(final_message)
+    
+    def get_hash(self, message):
+        return hashlib.sha256(message.encode()).digest()
 
 if __name__ == "__main__":
     cl = Client("127.0.0.1", 9001, "b_g")
