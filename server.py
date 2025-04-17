@@ -2,14 +2,14 @@ import socket
 import threading
 import hashlib
 
-class Server:
 
+class Server:
     def __init__(self, port: int) -> None:
-        self.host = '127.0.0.1'
+        self.host = "127.0.0.1"
         self.port = port
         self.clients = []
         self.username_lookup = {}
-        self.s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def start(self):
         self.s.bind((self.host, self.port))
@@ -21,11 +21,11 @@ class Server:
             c, addr = self.s.accept()
             username = c.recv(1024).decode()
             print(f"{username} tries to connect")
-            self.broadcast(f'new person has joined: {username}')
+            self.broadcast(f"new person has joined: {username}")
             self.username_lookup[c] = username
             self.clients.append(c)
 
-            # send public key to the client 
+            # send public key to the client
 
             # ...
 
@@ -33,21 +33,26 @@ class Server:
 
             # ...
 
-            # send the encrypted secret to a client 
+            # send the encrypted secret to a client
 
             # ...
 
-            threading.Thread(target=self.handle_client,args=(c,addr,)).start()
+            threading.Thread(
+                target=self.handle_client,
+                args=(
+                    c,
+                    addr,
+                ),
+            ).start()
 
     def broadcast(self, msg: str):
-        for client in self.clients: 
-
+        for client in self.clients:
             # encrypt the message
             # це зробимо після rsa
 
             client.send(msg.encode())
 
-    def handle_client(self, c: socket, addr): 
+    def handle_client(self, c: socket.socket, addr):
         while True:
             msg = c.recv(1024)
 
@@ -55,9 +60,8 @@ class Server:
                 if client != c:
                     final_message = self.create_message(msg.decode())
                     client.send(final_message)
-    
-    def create_message(self, message):
 
+    def create_message(self, message):
         hash = self.get_hash(message)
 
         bytes = message.encode()
@@ -67,6 +71,8 @@ class Server:
     def get_hash(self, message):
         return hashlib.sha256(message.encode()).digest()
 
+
 if __name__ == "__main__":
     s = Server(9001)
     s.start()
+
